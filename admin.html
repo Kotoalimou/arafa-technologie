@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Administration</title>
+<style>
+:root{--ink:#10202b;--soft:#5b6b76;--bg:#f3f5f7;--line:#dde3e8;--green:#009460;--yellow:#fcd116;--red:#ce1126}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+header{background:var(--ink);color:#fff}header .wrap{display:flex;justify-content:space-between;align-items:center;padding:12px 16px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+nav button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 14px;font-weight:600}
+nav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+nav b{background:var(--red);color:#fff;border-radius:10px;padding:0 6px;font-size:.8rem;margin-left:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
+.card small{color:var(--soft)}.card strong{display:block;font-size:1.4rem}
+.box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.f,select,textarea,input{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;max-width:100%}
+.f{width:100%}
+.btn{background:var(--green);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:600;text-decoration:none;display:inline-block}
+.btn.alt{background:var(--ink)}.btn.red{background:var(--red)}.btn.sm{padding:5px 10px;font-size:.85rem}
+.badge{display:inline-block;border-radius:20px;padding:2px 10px;font-size:.8rem;font-weight:700;background:#e4ebf0}
+.ok{background:#d6f2e5;color:#006f48}.ko{background:#fbe0e3;color:var(--red)}.wait{background:#fff3c4;color:#7a5d00}
+.items{font-size:.92rem;color:var(--soft);margin:6px 0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.grid4{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr auto;gap:6px;align-items:center;margin-bottom:6px}
+@media(max-width:760px){.grid4{grid-template-columns:1fr 1fr}}
+.err{color:var(--red);min-height:1.3em;font-size:.9rem}
+#login{max-width:340px;margin:12vh auto;background:#fff;padding:24px;border-radius:12px;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div id="login" hidden><h2>Administration</h2><p style="color:var(--soft);margin:6px 0 14px">Connectez-vous pour gérer la boutique.</p>
+<input class="f" id="pw" type="password" placeholder="Mot de passe" autocomplete="current-password"><div class="err" id="lerr" role="alert"></div>
+<button class="btn" style="width:100%" id="lgo">Se connecter</button></div>
+
+<div id="app" hidden>
+<header><div class="wrap"><strong id="ttl">Administration</strong><button class="btn alt sm" id="logout">Se déconnecter</button></div></header>
+<div class="wrap">
+<nav id="nav"></nav>
+<section id="v"></section>
+</div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = n => Number(n).toLocaleString("fr-FR") + " GNF";
+const dt = d => new Date(d.replace(" ", "T") + "Z").toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
+const ST = { nouvelle: "Nouvelle", confirmee: "Confirmée", preparation: "En préparation", livraison: "En livraison", livree: "Livrée", annulee: "Annulée" };
+const PY = { en_attente: ["En attente", "wait"], paye: ["Payé", "ok"], echoue: ["Échoué", "ko"], rembourse: ["Remboursé", "ko"] };
+let tab = "commandes", timer, stats = {};
+
+async function api(url, method = "GET", body) {
+  const r = await fetch("/admin/api" + url, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
+  if (r.status === 401 && url !== "/login") { showLogin(); throw new Error("401"); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || "Erreur");
+  return j;
+}
+function showLogin() { clearInterval(timer); $("#app").hidden = true; $("#login").hidden = false; $("#pw").focus(); }
+$("#lgo").onclick = async () => { try { await api("/login", "POST", { password: $("#pw").value }); $("#pw").value = ""; $("#login").hidden = true; start(); } catch (e) { $("#lerr").textContent = e.message; } };
+$("#pw").onkeydown = e => { if (e.key === "Enter") $("#lgo").click(); };
+$("#logout").onclick = async () => { await api("/logout", "POST").catch(() => {}); showLogin(); };
+
+const TABS = [["tableau", "Tableau de bord"], ["commandes", "Commandes"], ["produits", "Produits"], ["livraison", "Livraison"], ["securite", "Sécurité"]];
+function nav() { $("#nav").innerHTML = TABS.map(([k, l]) => `<button class="${tab === k ? "on" : ""}" data-t="${k}">${l}${k === "commandes" && stats.nouvelles ? `<b>${stats.nouvelles}</b>` : ""}</button>`).join(""); }
+$("#nav").onclick = e => { const b = e.target.closest("[data-t]"); if (b) { tab = b.dataset.t; render(); } };
+async function start() { $("#app").hidden = false; await render(); clearInterval(timer); timer = setInterval(() => { if (tab === "commandes" || tab === "tableau") render(true); }, 30000); }
+async function render(quiet) {
+  try { stats = await api("/stats"); } catch (e) { return; }
+  document.title = (stats.nouvelles ? `(${stats.nouvelles}) ` : "") + "Administration"; nav();
+  if (quiet && document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  ({ tableau: vTableau, commandes: vCommandes, produits: vProduits, livraison: vLivraison, securite: vSecurite })[tab]();
+}
+
+function vTableau() {
+  $("#v").innerHTML = `<div class="cards">
+  <div class="card"><small>Commandes aujourd’hui</small><strong>${stats.aujourdhui}</strong></div>
+  <div class="card"><small>Nouvelles à traiter</small><strong>${stats.nouvelles}</strong></div>
+  <div class="card"><small>Chiffre d’affaires encaissé</small><strong>${fmt(stats.caPaye)}</strong></div>
+  <div class="card"><small>À encaisser à la livraison</small><strong>${fmt(stats.aEncaisser)}</strong></div>
+  <div class="card"><small>Commandes au total</small><strong>${stats.total}</strong></div></div>
+  <div class="box"><strong>Stock faible</strong>${stats.stockBas.length ? stats.stockBas.map(p => `<div>${esc(p.nom)} : ${p.stock} restant(s)</div>`).join("") : `<div style="color:var(--soft)">Aucun produit en rupture proche.</div>`}</div>`;
+}
+
+async function vCommandes() {
+  const st = $("#fs")?.value || "", q = $("#fq")?.value || "";
+  const list = await api(`/orders?statut=${encodeURIComponent(st)}&q=${encodeURIComponent(q)}`);
+  $("#v").innerHTML = `<div class="bar"><select id="fs"><option value="">Tous les statuts</option>${Object.entries(ST).map(([k, v]) => `<option value="${k}" ${k === st ? "selected" : ""}>${v}</option>`).join("")}</select>
+  <input id="fq" placeholder="Nom, téléphone ou référence" value="${esc(q)}"><button class="btn alt" id="fgo">Filtrer</button><a class="btn" href="/admin/api/export.csv">Exporter en CSV</a></div>` +
+  (list.length ? list.map(o => `<div class="box" data-id="${o.id}"><div class="top"><strong>${esc(o.ref)}</strong><span>${dt(o.created_at)}</span></div>
+  <div><strong>${esc(o.nom)}</strong>, <a href="https://wa.me/224${esc(o.tel)}" target="_blank" rel="noopener">${esc(o.tel)}</a>. ${esc(o.zone)}${o.adresse ? ", " + esc(o.adresse) : ""}</div>
+  <div class="items">${o.items.map(i => `${esc(i.nom)} x${i.qte}`).join(", ")}</div>
+  <div class="top"><span><strong>${fmt(o.total)}</strong> (livraison ${fmt(o.frais)})</span>
+  <span><span class="badge">${o.mode === "en_ligne" ? "Paiement en ligne" : "À la livraison"}</span> <span class="badge ${PY[o.paiement][1]}">${PY[o.paiement][0]}</span></span></div>
+  <div class="bar" style="margin:10px 0 6px"><select data-act="statut">${Object.entries(ST).map(([k, v]) => `<option value="${k}" ${k === o.statut ? "selected" : ""}>${v}</option>`).join("")}</select>
+  ${o.paiement !== "paye" ? `<button class="btn sm" data-act="paye">Marquer payé</button>` : ""}
+  <input data-act="note" placeholder="Note interne" value="${esc(o.note || "")}" style="flex:1;min-width:160px"></div></div>`).join("") : `<div class="box" style="color:var(--soft)">Aucune commande pour le moment.</div>`);
+  $("#fgo").onclick = vCommandes; $("#fq").onkeydown = e => { if (e.key === "Enter") vCommandes(); };
+}
+$("#v").addEventListener("change", async e => {
+  const b = e.target.closest("[data-id]"); if (!b) return;
+  const id = b.dataset.id, a = e.target.dataset.act;
+  if (a === "statut") { if (e.target.value === "annulee" && !confirm("Annuler cette commande ? Le stock sera remis à jour.")) return render(); await api("/orders/" + id, "PATCH", { statut: e.target.value }); render(); }
+  if (a === "note") await api("/orders/" + id, "PATCH", { note: e.target.value });
+});
+$("#v").addEventListener("click", async e => {
+  const b = e.target.closest("[data-id]");
+  if (b && e.target.dataset.act === "paye") { await api("/orders/" + b.dataset.id, "PATCH", { paiement: "paye" }); render(); }
+});
+
+async function vProduits() {
+  const list = await api("/products");
+  const row = p => `<div class="grid4" data-pid="${p.id || ""}"><input class="f" data-k="nom" placeholder="Nom" value="${esc(p.nom || "")}"><input class="f" data-k="prix" type="number" min="0" placeholder="Prix GNF" value="${p.prix ?? ""}">
+  <input class="f" data-k="stock" type="number" min="0" placeholder="Stock" value="${p.stock ?? ""}"><input class="f" data-k="cat" placeholder="Catégorie" value="${esc(p.cat || "")}">
+  <input class="f" data-k="image" placeholder="Image (ex. /img/phone.jpg)" value="${esc(p.image || "")}">
+  <span style="display:flex;gap:4px"><label style="font-size:.8rem"><input type="checkbox" data-k="actif" ${p.actif !== 0 ? "checked" : ""}> visible</label>
+  <button class="btn sm" data-save>${p.id ? "Enregistrer" : "Ajouter"}</button>${p.id ? `<button class="btn sm red" data-del>Suppr.</button>` : ""}</span>
+  <input class="f" data-k="description" placeholder="Description courte" value="${esc(p.description || "")}" style="grid-column:1/-1"></div>`;
+  $("#v").innerHTML = `<div class="box"><strong>Nouveau produit</strong><div style="margin-top:8px">${row({})}</div></div><div class="box">${list.length ? list.map(row).join("<hr style='border:0;border-top:1px solid var(--line);margin:8px 0'>") : "Aucun produit."}</div><div class="err" id="perr"></div>`;
+}
+$("#v").addEventListener("click", async e => {
+  const r = e.target.closest("[data-pid]"); if (!r) return;
+  const id = r.dataset.pid, get = k => r.querySelector(`[data-k=${k}]`);
+  try {
+    if (e.target.dataset.save !== undefined) {
+      const body = { nom: get("nom").value, prix: get("prix").value, stock: get("stock").value, cat: get("cat").value, image: get("image").value, description: get("description").value, actif: get("actif").checked ? 1 : 0 };
+      await api(id ? "/products/" + id : "/products", id ? "PUT" : "POST", body); vProduits();
+    }
+    if (e.target.dataset.del !== undefined && confirm("Supprimer définitivement ce produit ?")) { await api("/products/" + id, "DELETE"); vProduits(); }
+  } catch (er) { $("#perr").textContent = er.message; }
+});
+
+async function vLivraison() {
+  const z = (await api("/zones")).filter(x => x.actif);
+  $("#v").innerHTML = `<div class="box"><strong>Communes et frais de livraison</strong><p style="color:var(--soft);margin:6px 0">Une commune par ligne, au format <code>Nom ; frais en GNF</code>. Mettez 0 pour une livraison gratuite ou un retrait en boutique.</p>
+  <textarea class="f" id="zt" rows="10">${z.map(x => esc(x.nom) + " ; " + x.frais).join("\n")}</textarea><div class="err" id="zerr" role="alert"></div><button class="btn" id="zs">Enregistrer</button></div>`;
+  $("#zs").onclick = async () => {
+    const arr = $("#zt").value.split("\n").map(l => l.split(";")).filter(a => a[0].trim()).map(a => ({ nom: a[0].trim(), frais: parseInt((a[1] || "0").replace(/\D/g, "")) || 0 }));
+    try { await api("/zones", "PUT", arr); $("#zerr").style.color = "var(--green)"; $("#zerr").textContent = "Enregistré."; } catch (e) { $("#zerr").textContent = e.message; }
+  };
+}
+function vSecurite() {
+  $("#v").innerHTML = `<div class="box" style="max-width:380px"><strong>Changer le mot de passe</strong>
+  <label style="display:block;margin-top:10px">Mot de passe actuel</label><input class="f" id="pa" type="password" autocomplete="current-password">
+  <label style="display:block;margin-top:10px">Nouveau mot de passe (8 caractères minimum)</label><input class="f" id="pn" type="password" autocomplete="new-password">
+  <div class="err" id="serr" role="alert"></div><button class="btn" id="ps">Enregistrer</button></div>`;
+  $("#ps").onclick = async () => { try { await api("/password", "PUT", { ancien: $("#pa").value, nouveau: $("#pn").value }); $("#serr").style.color = "var(--green)"; $("#serr").textContent = "Mot de passe modifié."; } catch (e) { $("#serr").style.color = "var(--red)"; $("#serr").textContent = e.message; } };
+}
+api("/stats").then(start).catch(showLogin);
+</script>
+</body>
+</html>

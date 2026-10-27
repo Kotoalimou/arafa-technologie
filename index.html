@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARAFA TECHNOLOGIE – Boutique en ligne en Guinée</title>
+<meta name="description" content="Commandez vos produits high-tech en ligne et recevez-les à Conakry. Paiement Mobile Money ou à la livraison.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#10202b;--soft:#5b6b76;--bg:#f3f5f7;--line:#dde3e8;--green:#009460;--green-d:#006f48;--yellow:#fcd116;--red:#ce1126;--r:10px}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+h1,h2,h3,.logo{font-family:"Bricolage Grotesque",system-ui,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+header{background:var(--ink);color:#fff;position:sticky;top:0;z-index:20}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{font-weight:800;font-size:1.15rem}.logo span{color:var(--yellow)}
+.cart-btn{background:var(--green);color:#fff;border:0;border-radius:var(--r);padding:9px 14px;font-weight:600;display:flex;gap:8px;align-items:center}
+.cart-btn b{background:var(--yellow);color:var(--ink);border-radius:20px;min-width:22px;padding:0 6px;text-align:center;font-size:.85rem}
+.hero{background:var(--ink);color:#fff;padding:44px 0 52px;border-top:1px solid #243746}
+.hero h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.05;font-weight:800;max-width:15ch}
+.hero p{color:#b9c6cf;margin:14px 0 22px;max-width:46ch}
+.steps{display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0}
+.steps li{border:1px solid #31485a;border-radius:var(--r);padding:8px 12px;font-size:.92rem}
+.steps strong{color:var(--yellow)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 16px}
+.tools input,.tools select{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;background:#fff;flex:1;min-width:150px}
+h2{font-size:1.5rem;margin-top:28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;margin-bottom:40px}
+.p{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.p .img{height:150px;display:grid;place-items:center;font-size:3rem;background:linear-gradient(135deg,#e4ebf0,#f7f9fa)}
+.p .img img{width:100%;height:100%;object-fit:cover}
+.p .body{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.p h3{font-size:1rem}.p small{color:var(--soft)}
+.price{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.15rem;background:var(--yellow);align-self:flex-start;padding:1px 9px;border-radius:5px;margin-top:auto}
+.add{background:var(--ink);color:#fff;border:0;border-radius:var(--r);padding:10px;font-weight:600;margin-top:6px}
+.add:hover{background:var(--green-d)}
+.empty{grid-column:1/-1;color:var(--soft);padding:24px 0}
+.over{position:fixed;inset:0;background:rgba(16,32,43,.55);display:none;z-index:30}.over.on{display:block}
+.panel{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:#fff;z-index:40;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+.panel.on{transform:none}
+.ph{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.scroll{overflow:auto;padding:16px;flex:1}
+.x{background:none;border:0;font-size:1.6rem;color:inherit}
+.line{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.line .t{flex:1;font-size:.95rem}
+.qty{display:flex;align-items:center;gap:6px}.qty button{width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px}
+.row{display:flex;justify-content:space-between;padding:4px 0}
+.row.total{font-weight:800;font-size:1.1rem;border-top:2px solid var(--ink);margin-top:6px;padding-top:8px}
+label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}
+.f{width:100%;border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+.pay{display:flex;flex-direction:column;gap:8px}
+.pay label{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:0;font-weight:500;cursor:pointer}
+.note{background:#eaf7f1;border-left:4px solid var(--green);padding:10px 12px;border-radius:6px;font-size:.88rem;margin-top:10px}
+.err{color:var(--red);font-size:.88rem;margin-top:8px;min-height:1.2em}
+.cta{display:block;width:100%;text-align:center;text-decoration:none;background:var(--green);color:#fff;border:0;border-radius:var(--r);padding:13px;font-weight:700;font-size:1rem;margin-top:12px}
+.cta:hover{background:var(--green-d)}.cta[disabled]{opacity:.6}
+.ghost{background:none;border:0;color:var(--soft);text-decoration:underline;padding:8px 0}
+.badge{display:inline-block;border-radius:20px;padding:2px 10px;font-size:.82rem;font-weight:700;background:#e4ebf0}
+.badge.ok{background:#d6f2e5;color:var(--green-d)}.badge.ko{background:#fbe0e3;color:var(--red)}
+.done{text-align:center;padding:20px 6px}.done h3{font-size:1.4rem;margin-bottom:8px}
+footer{background:var(--ink);color:#b9c6cf;padding:28px 0;font-size:.9rem}footer a,footer .ghost{color:var(--yellow)}
+.wa{position:fixed;left:14px;bottom:14px;background:#25d366;color:#fff;text-decoration:none;font-weight:700;border-radius:30px;padding:11px 16px;z-index:15;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+@media(prefers-reduced-motion:reduce){.panel{transition:none}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="logo" id="logo">ARAFA <span>TECHNOLOGIE</span></div>
+<button class="cart-btn" id="openCart" aria-label="Ouvrir le panier">Panier <b id="count">0</b></button></div></header>
+
+<section class="hero"><div class="wrap">
+<h1>Commandez ici, recevez chez vous à Conakry.</h1>
+<p>Téléphones, accessoires et matériel informatique. Choisissez votre commune, payez comme vous voulez, on s’occupe de la livraison.</p>
+<ul class="steps"><li><strong>1.</strong> Choisissez vos produits</li><li><strong>2.</strong> Indiquez votre commune</li><li><strong>3.</strong> Payez en ligne ou à la livraison</li></ul>
+</div></section>
+
+<main class="wrap">
+<h2>Nos produits</h2>
+<div class="tools"><input type="search" id="search" placeholder="Rechercher un produit" aria-label="Rechercher un produit"><select id="cat" aria-label="Catégorie"></select></div>
+<div class="grid" id="grid"><p class="empty">Chargement des produits…</p></div>
+</main>
+
+<footer><div class="wrap">
+<p><strong id="fname">ARAFA TECHNOLOGIE</strong>, Conakry, Guinée.</p>
+<p>Suivez-nous sur <a href="https://www.facebook.com/profile.php?id=100086311876411" target="_blank" rel="noopener">Facebook</a>. Retours sous 48 h en cas de produit défectueux.</p>
+<button class="ghost" id="track">Suivre ma commande</button>
+</div></footer>
+<a class="wa" id="waFloat" href="#" target="_blank" rel="noopener" hidden>Discuter sur WhatsApp</a>
+<div class="over" id="over"></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-label="Panier et commande">
+<div class="ph"><strong id="ptitle">Votre panier</strong><button class="x" id="closeCart" aria-label="Fermer">&times;</button></div>
+<div class="scroll" id="pbody"></div></aside>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = n => Number(n).toLocaleString("fr-FR") + " GNF";
+const STATUTS = { nouvelle: "Commande reçue", confirmee: "Confirmée", preparation: "En préparation", livraison: "En cours de livraison", livree: "Livrée", annulee: "Annulée" };
+let CFG = { zones: [] }, PROD = [], cats = [], panier = [];
+try { panier = JSON.parse(localStorage.getItem("arafa_panier")) || []; } catch (e) {}
+const save = () => { try { localStorage.setItem("arafa_panier", JSON.stringify(panier)); } catch (e) {} };
+const track = (ev, d) => { if (window.fbq) fbq("track", ev, d || {}); };
+
+async function init() {
+  try {
+    CFG = await (await fetch("/api/config")).json();
+    PROD = await (await fetch("/api/products")).json();
+  } catch (e) { $("#grid").innerHTML = `<p class="empty">Impossible de charger les produits. Vérifiez votre connexion et actualisez la page.</p>`; return; }
+  $("#logo").textContent = CFG.boutique; $("#fname").textContent = CFG.boutique; document.title = CFG.boutique + " – Boutique en ligne en Guinée";
+  if (CFG.whatsapp) { const w = $("#waFloat"); w.hidden = false; w.href = "https://wa.me/" + CFG.whatsapp + "?text=" + encodeURIComponent("Bonjour, j’ai une question sur vos produits."); }
+  if (CFG.pixelId) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+    fbq("init", CFG.pixelId); fbq("track", "PageView");
+  }
+  cats = ["Toutes les catégories", ...new Set(PROD.map(p => p.cat).filter(Boolean))];
+  $("#cat").innerHTML = cats.map(c => `<option>${esc(c)}</option>`).join("");
+  panier = panier.filter(l => PROD.some(p => p.id === l.id)); maj(); afficher();
+  const ref = new URLSearchParams(location.search).get("ref");
+  if (ref) { let t = ""; try { t = JSON.parse(localStorage.getItem("arafa_last")).tel; } catch (e) {} open_(); vueSuivi(ref, t); }
+}
+function afficher() {
+  const q = $("#search").value.trim().toLowerCase(), c = $("#cat").value;
+  const l = PROD.filter(p => (c === cats[0] || p.cat === c) && p.nom.toLowerCase().includes(q));
+  $("#grid").innerHTML = l.length ? l.map(p => `<article class="p"><div class="img" aria-hidden="true">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : "📦"}</div>
+  <div class="body"><h3>${esc(p.nom)}</h3><small>${esc(p.description)}</small><div class="price">${fmt(p.prix)}</div>
+  <button class="add" data-id="${p.id}">Ajouter au panier</button></div></article>`).join("") : `<p class="empty">Aucun produit ne correspond. Essayez un autre mot ou une autre catégorie.</p>`;
+}
+$("#search").oninput = afficher; $("#cat").onchange = afficher;
+$("#grid").onclick = e => { const b = e.target.closest(".add"); if (b) ajouter(+b.dataset.id); };
+
+const P = id => PROD.find(p => p.id === id);
+const sousTotal = () => panier.reduce((s, l) => s + P(l.id).prix * l.q, 0);
+function maj() { save(); $("#count").textContent = panier.reduce((s, l) => s + l.q, 0); }
+function ajouter(id) {
+  const l = panier.find(x => x.id === id), p = P(id);
+  if (l && l.q >= p.stock) { open_(); return vuePanier("Stock maximum atteint pour ce produit."); }
+  l ? l.q++ : panier.push({ id, q: 1 });
+  track("AddToCart", { content_ids: [id], content_name: p.nom, value: p.prix, currency: "GNF" });
+  maj(); open_(); vuePanier();
+}
+function open_() { $("#over").classList.add("on"); $("#panel").classList.add("on"); }
+function close_() { $("#over").classList.remove("on"); $("#panel").classList.remove("on"); }
+$("#openCart").onclick = () => { open_(); vuePanier(); };
+$("#closeCart").onclick = close_; $("#over").onclick = close_;
+document.addEventListener("keydown", e => { if (e.key === "Escape") close_(); });
+$("#track").onclick = () => { open_(); vueSuiviForm(); };
+
+function vuePanier(msg) {
+  $("#ptitle").textContent = "Votre panier";
+  if (!panier.length) { $("#pbody").innerHTML = `<p class="empty">Votre panier est vide. Ajoutez un produit pour commencer.</p>`; return; }
+  $("#pbody").innerHTML = (msg ? `<div class="err">${esc(msg)}</div>` : "") + panier.map(l => { const p = P(l.id); return `<div class="line"><div class="t"><strong>${esc(p.nom)}</strong><br><small>${fmt(p.prix)}</small></div>
+  <div class="qty"><button data-m="${l.id}" aria-label="Retirer un">&minus;</button><span>${l.q}</span><button data-p="${l.id}" aria-label="Ajouter un">+</button></div></div>`; }).join("") +
+  `<div class="row total"><span>Sous-total</span><span>${fmt(sousTotal())}</span></div><button class="cta" id="go">Passer la commande</button>`;
+  $("#go").onclick = () => { track("InitiateCheckout", { value: sousTotal(), currency: "GNF" }); vueCommande(); };
+}
+$("#pbody").addEventListener("click", e => {
+  const m = e.target.closest("[data-m]"), p = e.target.closest("[data-p]"); if (!m && !p) return;
+  const id = +(m || p).dataset[m ? "m" : "p"], l = panier.find(x => x.id === id);
+  if (p && l.q >= P(id).stock) return vuePanier("Stock maximum atteint pour ce produit.");
+  l.q += m ? -1 : 1; if (l.q <= 0) panier = panier.filter(x => x.id !== id);
+  maj(); vuePanier();
+});
+
+function vueCommande() {
+  if (!panier.length) return vuePanier();
+  $("#ptitle").textContent = "Finaliser la commande";
+  $("#pbody").innerHTML = `
+  <label for="nom">Nom complet</label><input class="f" id="nom" autocomplete="name">
+  <label for="tel">Téléphone (WhatsApp de préférence)</label><input class="f" id="tel" type="tel" autocomplete="tel" placeholder="6XX XX XX XX">
+  <label for="email">E-mail (facultatif, pour le reçu de paiement)</label><input class="f" id="email" type="email" autocomplete="email">
+  <label for="zone">Commune de livraison</label><select class="f" id="zone">${CFG.zones.map(z => `<option value="${z.id}">${esc(z.nom)}${z.frais ? " : " + fmt(z.frais) : ""}</option>`).join("")}</select>
+  <label for="adr">Quartier et repère précis</label><input class="f" id="adr" placeholder="Ex. : Kipé, près de la station Total">
+  <label>Mode de paiement</label><div class="pay">
+  ${CFG.paiementEnLigne ? `<label><input type="radio" name="pay" value="en_ligne" checked><span>Payer en ligne (Orange Money, MTN MoMo…)</span></label>` : ""}
+  <label><input type="radio" name="pay" value="livraison" ${CFG.paiementEnLigne ? "" : "checked"}><span>Payer à la livraison</span></label></div>
+  <div class="note" id="pn"></div><div id="recap" style="margin-top:14px"></div>
+  <div class="err" id="err" role="alert"></div>
+  <button class="cta" id="valider">Valider la commande</button><button class="ghost" id="retour">Retour au panier</button>`;
+  const recap = () => { const z = CFG.zones.find(z => z.id == $("#zone").value), st = sousTotal();
+    $("#recap").innerHTML = `<div class="row"><span>Sous-total</span><span>${fmt(st)}</span></div><div class="row"><span>Livraison</span><span>${z.frais ? fmt(z.frais) : "Gratuite"}</span></div><div class="row total"><span>Total</span><span>${fmt(st + z.frais)}</span></div>`; };
+  const note = () => { $("#pn").textContent = document.querySelector("input[name=pay]:checked").value === "en_ligne" ? "Vous serez redirigé vers une page sécurisée pour payer avec votre compte Mobile Money. La commande est confirmée automatiquement dès réception du paiement." : "Vous payez en espèces au livreur à la réception du colis. Nous vous appelons pour confirmer la commande."; };
+  $("#zone").onchange = recap; document.querySelectorAll("input[name=pay]").forEach(r => r.onchange = note);
+  $("#retour").onclick = () => vuePanier(); $("#valider").onclick = valider; recap(); note();
+}
+async function valider() {
+  const btn = $("#valider"), tel = $("#tel").value;
+  btn.disabled = true; btn.textContent = "Envoi en cours…"; $("#err").textContent = "";
+  try {
+    const r = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+      nom: $("#nom").value, tel, email: $("#email").value, zone: +$("#zone").value, adresse: $("#adr").value,
+      mode: document.querySelector("input[name=pay]:checked").value, items: panier.map(l => ({ id: l.id, qte: l.q })) }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || "Une erreur est survenue.");
+    try { localStorage.setItem("arafa_last", JSON.stringify({ ref: j.ref, tel })); } catch (e) {}
+    panier = []; maj();
+    if (j.checkoutUrl) { location.href = j.checkoutUrl; return; }
+    $("#ptitle").textContent = "Commande envoyée";
+    $("#pbody").innerHTML = `<div class="done"><h3>Merci !</h3><p>Votre commande <strong>${esc(j.ref)}</strong> est enregistrée. Nous vous appelons très vite pour confirmer la livraison. Gardez ce numéro pour suivre votre colis.</p><button class="cta" id="suivre">Suivre ma commande</button></div>`;
+    $("#suivre").onclick = () => vueSuivi(j.ref, tel);
+  } catch (e) { $("#err").textContent = e.message; btn.disabled = false; btn.textContent = "Valider la commande"; }
+}
+
+function vueSuiviForm(msg) {
+  $("#ptitle").textContent = "Suivre ma commande";
+  $("#pbody").innerHTML = `<label for="sref">Numéro de commande</label><input class="f" id="sref" placeholder="AT-XXXXXX"><label for="stel">Téléphone utilisé à la commande</label><input class="f" id="stel" type="tel">
+  <div class="err" role="alert">${esc(msg || "")}</div><button class="cta" id="sgo">Voir le statut</button>`;
+  $("#sgo").onclick = () => vueSuivi($("#sref").value.trim(), $("#stel").value);
+}
+async function vueSuivi(ref, tel) {
+  if (!tel) return vueSuiviForm();
+  $("#ptitle").textContent = "Suivi de commande"; $("#pbody").innerHTML = `<p class="empty">Chargement…</p>`;
+  try {
+    const r = await fetch(`/api/suivi?ref=${encodeURIComponent(ref)}&tel=${encodeURIComponent(tel)}`), o = await r.json();
+    if (!r.ok) return vueSuiviForm(o.error);
+    const pay = o.paiement === "paye" ? `<span class="badge ok">Payé</span>` : o.paiement === "echoue" ? `<span class="badge ko">Paiement échoué</span>` : `<span class="badge">${o.mode === "livraison" ? "À payer à la livraison" : "Paiement en attente"}</span>`;
+    if (o.paiement === "paye" && !localStorage.getItem("pix_" + o.ref)) { track("Purchase", { value: o.total, currency: "GNF" }); try { localStorage.setItem("pix_" + o.ref, "1"); } catch (e) {} }
+    $("#pbody").innerHTML = `<div class="done"><h3>${esc(o.ref)}</h3><p><span class="badge ${o.statut === "annulee" ? "ko" : "ok"}">${STATUTS[o.statut] || esc(o.statut)}</span> ${pay}</p></div>` +
+      o.items.map(i => `<div class="row"><span>${esc(i.nom)} x${i.qte}</span><span>${fmt(i.prix * i.qte)}</span></div>`).join("") +
+      `<div class="row total"><span>Total</span><span>${fmt(o.total)}</span></div><p class="note">Livraison : ${esc(o.zone)}. ${o.paiement === "en_attente" && o.mode === "en_ligne" ? "Si vous venez de payer, actualisez dans une minute." : ""}</p>`;
+  } catch (e) { vueSuiviForm("Impossible de récupérer le statut. Réessayez."); }
+}
+init();
+</script>
+</body>
+</html>
